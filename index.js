@@ -1,22 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-let bancoDados = { pedidos: [] };
+let db = { pedidos: [] };
 
-app.get('/', (req, res) => res.send("Servidor Peaky Blinders Online!"));
-app.get('/dados', (req, res) => res.json(bancoDados));
+app.get('/dados', (req, res) => res.json(db));
+
 app.post('/enviar', (req, res) => {
-    bancoDados.pedidos.push(req.body);
-    res.json({ status: "sucesso" });
+    const novo = { ...req.body, id: Date.now(), status: 'PENDENTE' };
+    db.pedidos.push(novo);
+    res.json({ sucesso: true });
 });
+
 app.post('/decidir', (req, res) => {
-    const { id, novoStatus } = req.body;
-    const p = bancoDados.pedidos.find(x => x.id === id);
-    if(p) p.status = novoStatus;
-    res.json({ status: "atualizado" });
+    const { id, status } = req.body;
+    const p = db.pedidos.find(x => x.id === id);
+    if (p) p.status = status;
+    res.json({ sucesso: true });
 });
 
 app.listen(process.env.PORT || 3000);
