@@ -1,46 +1,35 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-// O banco de dados agora começa com o seu admin padrão
-let usuarios = [
-    {
-        nome: "admin",
-        gmail: "admin@gmail.com",
-        senha: "1234",
-        status: "aprovado",
-        cargo: "ADMINISTRADOR"
-    }
-];
-
-// Rota para o Login e Dashboard buscarem a lista
-app.get('/usuarios', (req, res) => {
-    res.json(usuarios);
-});
-
-// Rota para o Registro (Finalizar Registro)
-app.post('/usuarios', (req, res) => {
-    const novoUsuario = req.body;
+// Rota para receber pedido de pontos com print
+app.post('/pedir-pontos', (req, res) => {
+    const { gmail, nomeUsuario, nomeItem, valor, print } = req.body;
+    let pedidos = [];
+    if (fs.existsSync('pedidos.json')) pedidos = JSON.parse(fs.readFileSync('pedidos.json'));
     
-    // Verifica se já existe
-    if (usuarios.find(u => u.nome === novoUsuario.nome)) {
-        return res.status(400).json({ erro: "Usuário já existe" });
+    pedidos.push({ idPedido: Date.now(), gmail, nomeUsuario, nomeItem, valor, print });
+    fs.writeFileSync('pedidos.json', JSON.stringify(pedidos, null, 2));
+    res.json({ success: true });
+});
+
+// Rota para o Admin listar os pedidos de print
+app.get('/listar-pedidos', (req, res) => {
+    if (fs.existsSync('pedidos.json')) {
+        res.json(JSON.parse(fs.readFileSync('pedidos.json')));
+    } else {
+        res.json([]);
     }
+});
+
+// Rota para o Admin salvar pontos/horas manualmente
+app.post('/atualizar-membro-admin', (req, res) => {
+    const { gmail, add, rem, horas } = req.body;
+    let usuarios = JSON.parse(fs.readFileSync('usuarios.json'));
+    const idx = usuarios.findIndex(u => u.gmail === gmail);
     
-    usuarios.push(novoUsuario);
-    res.status(201).json({ sucesso: true });
+    if (idx !== -1) {
+        usuarios[idx].pontos = (usuarios[idx].pontos || 0) + (add || 0) - (rem || 0);
+        usuarios[idx].horas = horas;
+        fs.writeFileSync('usuarios.json', JSON.stringify(usuarios, null, 2));
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: "Usuário não encontrado" });
+    }
 });
-
-// Rota para aprovar/reprovar (se precisar no futuro)
-app.post('/decidir', (req, res) => {
-    const { nome, status } = req.body;
-    const u = usuarios.find(x => x.nome === nome);
-    if (u) u.status = status;
-    res.json({ sucesso: true });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
