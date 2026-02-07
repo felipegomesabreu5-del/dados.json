@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "nome": "!nine$1",
+    "gmail": "admin@gmail.com",
+    "senha": "30236363@!$#",
+    "status": "aprovado",
+    "pontos": 1000,
+    "horas": 0,
+    "cargo": "ADMINISTRADOR"
+  },
+  {
+    "id": 2,
+    "nome": "UsuarioTeste",
+    "gmail": "teste@gmail.com",
+    "senha": "senha123",
+    "status": "pendente",
+    "pontos": 50,
+    "horas": 2,
+    "cargo": "MEMBRO"
+  }
+]
